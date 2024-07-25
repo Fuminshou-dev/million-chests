@@ -8,6 +8,7 @@ import { useMeasure } from "react-use";
 const NUMBER_OF_CHESTS = 1_000_000;
 const COLUMN_WIDTH = 100;
 const ROW_HEIGHT = 100;
+const TOTAL_GOLD_CHESTS = 5;
 
 function Chest({
   rowIndex,
@@ -79,6 +80,7 @@ function Chest({
   );
 }
 export default function Home() {
+  const goldChests = useQuery(api.chests.getOpenGoldChests) || [];
   const openedChests = useQuery(api.sums.getOpenBoxSum) ?? 0;
   const [code, setCode] = useState<string>("");
   const [ref, { width, height }] = useMeasure<HTMLDivElement>();
@@ -92,6 +94,9 @@ export default function Home() {
 
       <p className="text-xl">
         {openedChests} of {NUMBER_OF_CHESTS} opened
+      </p>
+      <p className="text-xl">
+        {goldChests.length} of {TOTAL_GOLD_CHESTS} opened
       </p>
       <div
         ref={ref}
