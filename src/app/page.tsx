@@ -2,6 +2,8 @@
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Dispatch, SetStateAction, useState } from "react";
+import { BITS_IN_PARTITION } from "../../convex/chests";
+import { flushAllTraces } from "next/dist/trace";
 const NUMBER_OF_CHESTS = 100;
 
 function Chest({
@@ -11,9 +13,13 @@ function Chest({
   index: number;
   onCodeFound: (code: string) => void;
 }) {
+  const goldChests = useQuery(api.chests.getGoldChests) || [];
   const openChest = useMutation(api.chests.openChest);
-  const chest = useQuery(api.chests.getChests, { index });
-  const isOpen = chest?.isOpen;
+  const chestsPartition = useQuery(api.chests.getChestsPartition, {
+    partition: Math.floor(index / BITS_IN_PARTITION),
+  });
+  const bit = 1 << index % BITS_IN_PARTITION;
+  const isOpen = chestsPartition ? (chestsPartition.bitset & bit) !== 0 : false;
   return (
     <button
       disabled={isOpen}
@@ -28,7 +34,7 @@ function Chest({
       key={index}
     >
       {isOpen ? (
-        chest.isGold ? (
+        goldChests.some((c) => c.index === index) ? (
           <img src="/chest-gold.png" alt="chest" />
         ) : (
           <img src="/chest-empty.png" alt="chest" />
