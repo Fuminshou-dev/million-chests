@@ -1,27 +1,16 @@
 import { v } from "convex/values";
 import { mutation, query, QueryCtx } from "./_generated/server";
-import { disconnect } from "process";
 
 export const BITS_IN_PARTITION = 32;
-
-const DISCOUNTS = [
-  {
-    index: 1,
-    code: "asdfas",
-  },
-  {
-    index: 0,
-    code: "asdfas",
-  },
-  {
-    index: 5,
-    code: "asdfas",
-  },
-  {
-    index: 15,
-    code: "asdfas",
-  },
-];
+function getGoldChests() {
+  return process.env.GOLD_CHESTS!.split(";").map((s) => {
+    const [index, code] = s.split(",");
+    return {
+      index: parseInt(index),
+      code,
+    };
+  });
+}
 
 export const openChest = mutation({
   args: {
@@ -43,7 +32,10 @@ export const openChest = mutation({
       chestPartition.bitset |= 1 << args.index % BITS_IN_PARTITION;
       await ctx.db.patch(chestPartition._id, { bitset: chestPartition.bitset });
     }
-    const goldChest = DISCOUNTS.find((c) => c.index === args.index);
+    const sumRecord = await ctx.db.query("sums").first();
+    sumRecord!.value++;
+    await ctx.db.patch(sumRecord!._id, { value: sumRecord?.value });
+    const goldChest = getGoldChests().find((c) => c.index === args.index);
     if (goldChest) {
       return goldChest.code;
     }
@@ -76,10 +68,10 @@ async function isChestOpen(ctx: QueryCtx, index: number) {
   return chestPartition ? (chestPartition.bitset & bit) !== 0 : false;
 }
 
-export const getGoldChests = query({
+export const getOpenGoldChests = query({
   async handler(ctx) {
     const chests = await Promise.all(
-      DISCOUNTS.map(async (chest) => {
+      getGoldChests().map(async (chest) => {
         return {
           isOpen: await isChestOpen(ctx, chest.index),
           index: chest.index,
