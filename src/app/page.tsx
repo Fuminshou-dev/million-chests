@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BITS_IN_PARTITION } from "../../convex/chests";
 import { FixedSizeGrid as Grid } from "react-window";
 import { useMeasure } from "react-use";
@@ -80,8 +80,11 @@ function Chest({
 }
 export default function Home() {
   const openedChests = useQuery(api.sums.getOpenBoxSum) ?? 0;
-  const [code, setCode] = useState(window.localStorage.getItem(`code`));
+  const [code, setCode] = useState<string>("");
   const [ref, { width, height }] = useMeasure<HTMLDivElement>();
+  useEffect(() => {
+    setCode(window.localStorage.getItem(`code`) ?? "");
+  }, []);
   return (
     <main className="flex min-h-screen flex-col items-center justify-between whitespace-nowrap overflow-auto  scrollbar-hide">
       <h1 className="font-medium text-2xl">{NUMBER_OF_CHESTS} CHESTS</h1>
