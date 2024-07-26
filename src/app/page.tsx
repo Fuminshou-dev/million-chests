@@ -96,7 +96,7 @@ export default function Home() {
         {openedChests} of {NUMBER_OF_CHESTS} opened
       </p>
       <p className="text-xl">
-        {goldChests.length} of {TOTAL_GOLD_CHESTS} opened
+        {goldChests.length} of {TOTAL_GOLD_CHESTS} gold chests opened
       </p>
       <div
         ref={ref}
